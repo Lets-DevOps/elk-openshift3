@@ -1,5 +1,7 @@
 FROM openshift/base-centos7
 
+MAINTAINER Virendra Singh Bhalothia <bhalothia@theremotelab.com>
+
 ENV LOGSTASH_VERSION=2.3.0 \
     ELASTICSEARCH_SERVICE_HOST=elasticsearch
 
@@ -18,15 +20,13 @@ RUN \
   rm -f logstash-${LOGSTASH_VERSION}.tar.gz && \
   yum clean all -y
 
-# COPY ./conf/logstash.conf /opt/app-root/src/logstash.conf
 
 # Copy the S2I scripts to /usr/libexec/s2i, since openshift/base-centos7 image sets io.openshift.s2i.scripts-url label that way, or update that label
 COPY ./.s2i/bin/ /usr/libexec/s2i
 
-# RUN chmod u+x /opt/app-root/bin/logstash
 # Drop the root user and make the content of /opt/app-root owned by user 1001
 RUN chown -R 1001:1001 /opt/app-root
-#RUN chown -R 1001:1001 /tmp/src
+
 # This default user is created in the openshift/base-centos7 image
 USER 1001
 
