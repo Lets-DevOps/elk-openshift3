@@ -25,8 +25,6 @@ RUN yum install -y --setopt=tsflags=nodocs java-${JAVA_VERSION}-openjdk && \
 	yum clean all -y && \
 	chown -R 1001:0 ${ES_HOME}
 
-COPY ./config ${HOME}/config
-
 COPY ./.s2i/bin/ /usr/libexec/s2i
 
 RUN chown -R 1001:1001 /opt/app-root
