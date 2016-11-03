@@ -13,14 +13,18 @@ if [[ "$1" == "-h" ]]; then
 	exec /usr/libexec/s2i/usage
 fi
 
-# Restore artifacts from the previous build (if they exist).
-#
-if [ "$(ls /tmp/artifacts/ 2>/dev/null)" ]; then
-  echo "---> Restoring build artifacts..."
-  mv /tmp/artifacts/. ./
-fi
-
 echo "---> Installing application source..."
 cp -Rf /tmp/src/. ./
+if [[ -d ./config ]]; then
+	cp -r config/* ${ES_HOME}/config/
+fi
 
-echo "---> Building application from source..."
+if [[ -f ./plugins.txt ]]; then
+	echo "---> Installing plugins..."
+	cat plugins.txt | while read a; do ${ES_HOME}/bin/plugin install $a; done
+fi
+
+if [[ -d ${ES_HOME}/bin/shield ]]; then
+	echo "---> Creating admin user..."
+	${ES_HOME}/bin/shield/esusers useradd ${ADMIN_USERNAME} -p ${ADMIN_PASSWORD} -r admin
+fi
