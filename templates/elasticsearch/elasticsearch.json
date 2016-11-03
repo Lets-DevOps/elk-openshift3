@@ -75,6 +75,18 @@
             "name": "GENERIC_WEBHOOK_SECRET",
             "generate": "expression",
             "from": "[a-zA-Z0-9]{40}"
+        },
+        {
+            "description": "Admin username if shield(authentication plugin) is installed",
+            "name": "ADMIN_USERNAME",
+            "value": "es_admin",
+            "required": false
+        },
+        {
+            "description": "Admin password if shield(authentication plugin) is installed",
+            "name": "ADMIN_PASSWORD",
+            "generate": "expression",
+            "from": "[a-zA-Z0-9]{8}"
         }
     ]
     ,
@@ -266,7 +278,17 @@
                             "kind": "ImageStreamTag",
                             "namespace": "${NAMESPACE}",
                             "name": "${BUILDER_IMAGE_NAME}:${BUILDER_IMAGE_TAG}"
-                        }
+                        },
+                        "env": [
+                            {
+                                "name": "ADMIN_USERNAME",
+                                "value": "${ADMIN_USERNAME}"
+                            },
+                            {
+                                "name": "ADMIN_PASSWORD",
+                                "value": "${ADMIN_PASSWORD}"
+                            }
+                        ]
                     }
                 },
                 "output": {
