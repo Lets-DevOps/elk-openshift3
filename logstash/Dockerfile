@@ -8,12 +8,11 @@ ENV LOGSTASH_VERSION=2.3.0 \
 LABEL io.k8s.description="Logstash" \
       io.k8s.display-name="logstash ${LOGSTASH_VERSION}" \
       io.openshift.expose-services="8080:http" \
-      io.openshift.tags="logstash,${LOGSTASH_VERSION},elk"
+      io.openshift.tags="logstash,${LOGSTASH_VERSION}, elk"
 
 RUN \
   rpm --rebuilddb && yum clean all && \
   yum install -y tar java-1.8.0-openjdk openssl && \
- # mkdir -p /tmp/src && \
   cd /opt/app-root && \
   curl -O https://download.elasticsearch.org/logstash/logstash/logstash-${LOGSTASH_VERSION}.tar.gz && \
   tar zxvf logstash-${LOGSTASH_VERSION}.tar.gz -C /opt/app-root --strip-components=1 && \
