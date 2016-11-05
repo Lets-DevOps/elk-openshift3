@@ -6,7 +6,8 @@ MAINTAINER Virendra Singh Bhalothia <bhalothia@theremotelab.com>
 ENV LOGSTASH_VERSION=2.3.0 \
     JAVA_VERSION=1.8.0 \
     LOGSTASH_HOME=/usr/share/logstash \
-    ELASTICSEARCH_SERVICE_HOST=elasticsearch
+    ELASTICSEARCH_SERVICE_HOST=elasticsearch \
+    PATH=${LOGSTASH_HOME}/bin:${LOGSTASH_HOME}/bin:$PATH
 
 LABEL io.k8s.description="Logstash Builder Image" \
       io.k8s.display-name="logstash ${LOGSTASH_VERSION}" \
@@ -32,5 +33,7 @@ RUN chown -R 1001:1001 ${LOGSTASH_HOME}
 
 # This default user is created in the openshift/base-centos7 image
 USER 1001
+
+WORKDIR ${LOGSTASH_HOME}
 
 CMD ["/usr/libexec/s2i/usage"]
