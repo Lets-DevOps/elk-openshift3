@@ -18,6 +18,8 @@ elasticsearch template is a parameterized template that helps build an elasticse
 - `GIT_SOURCE_SECRET` - Git scm [secret](https://docs.openshift.com/enterprise/3.1/dev_guide/builds.html#source-code) that is already created in osv3
 - `GITHUB_WEBHOOK_SECRET` - A secret string used to configure the GitHub webhook
 - `GENERIC_WEBHOOK_SECRET` - A secret string used to configure the Generic webhook
+- `ADMIN_USERNAME` - Admin username if shield(authentication plugin) is installed
+- `ADMIN_PASSWORD` - Admin password if shield(authentication plugin) is installed
 
 ## Use the template
 
