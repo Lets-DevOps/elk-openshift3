@@ -7,4 +7,4 @@
 #	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
 #
 
-exec /opt/app-root/bin/logstash --verbose -f /opt/app-root/src
+exec ${LOGSTASH_HOME}/bin/logstash --verbose -f ${LOGSTASH_HOME}/conf.d
