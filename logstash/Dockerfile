@@ -1,22 +1,25 @@
+# Logstash Builder Image
 FROM openshift/base-centos7
 
 MAINTAINER Virendra Singh Bhalothia <bhalothia@theremotelab.com>
 
 ENV LOGSTASH_VERSION=2.3.0 \
+    JAVA_VERSION=1.8.0 \
+    LOGSTASH_HOME=/usr/share/logstash \
     ELASTICSEARCH_SERVICE_HOST=elasticsearch
 
-LABEL io.k8s.description="Logstash" \
+LABEL io.k8s.description="Logstash Builder Image" \
       io.k8s.display-name="logstash ${LOGSTASH_VERSION}" \
       io.openshift.expose-services="8080:http" \
-      io.openshift.tags="logstash,${LOGSTASH_VERSION},elk"
+      io.openshift.tags="logstash,${LOGSTASH_VERSION}, elk"
 
 RUN \
   rpm --rebuilddb && yum clean all && \
-  yum install -y tar java-1.8.0-openjdk openssl && \
- # mkdir -p /tmp/src && \
-  cd /opt/app-root && \
+  yum install -y tar java-${JAVA_VERSION}-openjdk openssl && \
+  mkdir -p ${LOGSTASH_HOME}/conf.d \
+  cd ${LOGSTASH_HOME} && \
   curl -O https://download.elasticsearch.org/logstash/logstash/logstash-${LOGSTASH_VERSION}.tar.gz && \
-  tar zxvf logstash-${LOGSTASH_VERSION}.tar.gz -C /opt/app-root --strip-components=1 && \
+  tar zxvf logstash-${LOGSTASH_VERSION}.tar.gz -C ${LOGSTASH_HOME} --strip-components=1 && \
   rm -f logstash-${LOGSTASH_VERSION}.tar.gz && \
   yum clean all -y
 
@@ -24,8 +27,8 @@ RUN \
 # Copy the S2I scripts to /usr/libexec/s2i, since openshift/base-centos7 image sets io.openshift.s2i.scripts-url label that way, or update that label
 COPY ./.s2i/bin/ /usr/libexec/s2i
 
-# Drop the root user and make the content of /opt/app-root owned by user 1001
-RUN chown -R 1001:1001 /opt/app-root
+# Drop the root user and make the content of ${LOGTASH_HOME} owned by user 1001
+RUN chown -R 1001:1001 ${LOGSTASH_HOME}
 
 # This default user is created in the openshift/base-centos7 image
 USER 1001

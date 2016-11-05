@@ -17,3 +17,11 @@ echo "---> Installing application source...Building latest runtime
 image"
 
 cp -Rf /tmp/src/. ./
+if [[ -d ./conf ]]; then
+	cp -r conf/* ${LOGSTASH_HOME}/conf.d/
+fi
+
+if [[ -f ./plugins.txt ]]; then
+	echo "---> Installing plugins..."
+	cat plugins.txt | while read a; do ${LOGSTASH_HOME}/bin/plugin install $a; done
+fi
