@@ -1,1 +1,2 @@
 logstash-input-redis
+logstash-output-elasticsearch
