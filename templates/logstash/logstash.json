@@ -1,0 +1,300 @@
+{
+    "kind": "Template",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "logstash",
+        "annotations": {
+            "description": "A logstash application",
+            "tags": "logstash,logging,elk"
+        }
+    },
+    "labels": {
+        "created-by": "template-logstash"
+    },
+    "parameters": [
+        {
+            "description": "The name assigned to all of the frontend objects defined in this template",
+            "name": "NAME",
+            "required": true
+        },
+        {
+            "description": "Maximum amount of memory the container can use",
+            "name": "MEMORY_LIMIT",
+            "value": "512Mi",
+            "required": true
+        },
+        {
+            "description": "Namespace where the ImageStream resides",
+            "name": "NAMESPACE",
+            "value": "",
+            "required": true
+        },
+        {
+            "description": "Name of the logstash builder image",
+            "name": "BUILDER_IMAGE_NAME",
+            "value": "logstash",
+            "required": true
+        },
+        {
+            "description": "Tag of the logstash builder image",
+            "name": "BUILDER_IMAGE_TAG",
+            "value": "latest",
+            "required": true
+        },
+        {
+            "description": "The URL of the repository with your application source code",
+            "name": "GIT_URI",
+            "required": true
+        },
+        {
+            "description": "Git branch/tag reference",
+            "name": "GIT_REF",
+            "value": "master",
+            "required": true
+        },
+        {
+            "description": "Git context directory",
+            "name": "CONTEXT_DIR",
+            "value": "",
+            "required": false
+        },
+        {
+            "description": "Git scm secret",
+            "name": "GIT_SOURCE_SECRET",
+            "value": "",
+            "required": false
+        },
+        {
+            "description": "A secret string used to configure the GitHub webhook",
+            "name": "GITHUB_WEBHOOK_SECRET",
+            "generate": "expression",
+            "from": "[a-zA-Z0-9]{40}"
+        },
+        {
+            "description": "A secret string used to configure the Generic webhook",
+            "name": "GENERIC_WEBHOOK_SECRET",
+            "generate": "expression",
+            "from": "[a-zA-Z0-9]{40}"
+        },
+        {
+            "description": "Redis Service Name on OSV3",
+            "name": "REDIS_SERVICE_NAME",
+            "value": "redis-elk",
+            "required": true
+        },
+        {
+            "description": "Password to authenticate to Redis input",
+            "name": "REDIS_PASSWORD",
+            "generate": "expression",
+            "from": "[a-zA-Z0-9]{8}"
+        },
+        {
+            "description": "Elasticsearch Service Name on OSV3",
+            "name": "ES_SERVICE_NAME",
+            "value": "elasticsearch-elk",
+            "required": true
+        },
+        {
+            "description": "Password to authenticate to Elasticsearch",
+            "name": "ES_PASSWORD",
+            "generate": "expression",
+            "from": "[a-zA-Z0-9]{8}"
+        }
+
+    ]
+    ,
+    "objects": [
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${NAME}",
+                "labels": {
+                    "application": "${NAME}"
+                }
+            },
+            "spec": {
+                "selector": {
+                    "application": "${NAME}",
+                    "deploymentconfig": "${NAME}"
+                },
+                "type": "ClusterIP",
+                "sessionAffinity": "None"
+            }
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${NAME}",
+                "labels": {
+                    "application": "${NAME}"
+                }
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Rolling",
+                    "rollingParams": {
+                        "updatePeriodSeconds": 1,
+                        "intervalSeconds": 1,
+                        "timeoutSeconds": 600,
+                        "maxUnavailable": "25%",
+                        "maxSurge": "25%"
+                    },
+                    "resources": {}
+                },
+                "triggers": [
+                    {
+                        "type": "ConfigChange"
+                    },
+                    {
+                        "type": "ImageChange",
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "${NAME}"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "namespace": "${NAMESPACE}",
+                                "name": "${NAME}:latest"
+                            }
+                        }
+                    }
+                ],
+                "replicas": 1,
+                "test": false,
+                "selector": {
+                    "application": "${NAME}",
+                    "deploymentconfig": "${NAME}"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "application": "${NAME}",
+                            "deploymentconfig": "${NAME}"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "name": "${NAME}",
+                                "image": "${NAMESPACE}/${NAME}",
+                                "resources": {
+                                    "limits": {
+                                        "memory": "${MEMORY_LIMIT}"
+                                    }
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "imagePullPolicy": "Always"
+                            }
+                        ],
+                        "restartPolicy": "Always",
+                        "terminationGracePeriodSeconds": 30,
+                        "dnsPolicy": "ClusterFirst",
+                        "securityContext": {}
+                    }
+                }
+            }
+        },
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${NAME}",
+                "labels": {
+                    "application": "${NAME}"
+                }
+            },
+            "spec": {
+                "tags": [
+                    {
+                        "name": "latest"
+                    }
+                ]
+            },
+            "status": {
+                "dockerImageRepository": ""
+            }
+        },
+        {
+            "kind": "BuildConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${NAME}",
+                "labels": {
+                    "application": "${NAME}"
+                }
+            },
+            "spec": {
+                "triggers": [
+                    {
+                        "type": "GitHub",
+                        "github": {
+                            "secret": "${GITHUB_WEBHOOK_SECRET}"
+                        }
+                    },
+                    {
+                        "type": "Generic",
+                        "generic": {
+                            "secret": "${GENERIC_WEBHOOK_SECRET}"
+                        }
+                    },
+                    {
+                        "type": "ConfigChange"
+                    },
+                    {
+                        "type": "ImageChange",
+                        "imageChange": {}
+                    }
+                ],
+                "runPolicy": "Serial",
+                "source": {
+                    "type": "Git",
+                    "git": {
+                        "uri": "${GIT_URI}",
+                        "ref": "${GIT_REF}"
+                    },
+                    "contextDir": "${CONTEXT_DIR}",
+                    "sourceSecret": {
+                        "name": "${GIT_SOURCE_SECRET}"
+                    }
+                },
+                "strategy": {
+                    "type": "Source",
+                    "sourceStrategy": {
+                        "from": {
+                            "kind": "ImageStreamTag",
+                            "namespace": "${NAMESPACE}",
+                            "name": "${BUILDER_IMAGE_NAME}:${BUILDER_IMAGE_TAG}"
+                        },
+                        "env": [
+                            {
+                                "name": "REDIS_SERVICE_NAME",
+                                "value": "${REDIS_SERVICE_NAME}"
+                            },
+                            {
+                                "name": "REDIS_PASSWORD",
+                                "value": "${REDIS_PASSWORD}"
+                            },
+                            {
+                                "name": "ES_SERVICE_NAME",
+                                "value": "${ES_SERVICE_NAME}"
+                            },
+                            {
+                                "name": "ES_PASSWORD",
+                                "value": "${ES_PASSWORD}"
+                            }
+                        ]
+                    }
+                },
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "${NAME}:latest"
+                    }
+                }
+            }
+        }
+    ]
+}
