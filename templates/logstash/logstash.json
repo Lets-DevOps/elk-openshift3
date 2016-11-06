@@ -85,8 +85,8 @@
         {
             "description": "Password to authenticate to Redis input",
             "name": "REDIS_PASSWORD",
-            "generate": "expression",
-            "from": "[a-zA-Z0-9]{8}"
+            "value": "Copy from Redis config",
+            "required": true
         },
         {
             "description": "Elasticsearch Service Name on OSV3",
@@ -97,8 +97,8 @@
         {
             "description": "Password to authenticate to Elasticsearch",
             "name": "ES_PASSWORD",
-            "generate": "expression",
-            "from": "[a-zA-Z0-9]{8}"
+            "value": "Copy from ES config",
+            "required": true
         }
 
     ]
@@ -162,6 +162,24 @@
                             {
                                 "name": "${NAME}",
                                 "image": "${NAMESPACE}/${NAME}",
+                                "env": [
+                                    {
+                                        "name": "REDIS_SERVICE_NAME",
+                                        "value": "${REDIS_SERVICE_NAME}"
+                                    },
+                                    {
+                                        "name": "REDIS_PASSWORD",
+                                        "value": "${REDIS_PASSWORD}"
+                                    },
+                                    {
+                                        "name": "ES_SERVICE_NAME",
+                                        "value": "${ES_SERVICE_NAME}"
+                                    },
+                                    {
+                                        "name": "ES_PASSWORD",
+                                        "value": "${ES_PASSWORD}"
+                                    }
+                                ],
                                 "resources": {
                                     "limits": {
                                         "memory": "${MEMORY_LIMIT}"
@@ -249,25 +267,7 @@
                             "kind": "ImageStreamTag",
                             "namespace": "${NAMESPACE}",
                             "name": "${BUILDER_IMAGE_NAME}:${BUILDER_IMAGE_TAG}"
-                        },
-                        "env": [
-                            {
-                                "name": "REDIS_SERVICE_NAME",
-                                "value": "${REDIS_SERVICE_NAME}"
-                            },
-                            {
-                                "name": "REDIS_PASSWORD",
-                                "value": "${REDIS_PASSWORD}"
-                            },
-                            {
-                                "name": "ES_SERVICE_NAME",
-                                "value": "${ES_SERVICE_NAME}"
-                            },
-                            {
-                                "name": "ES_PASSWORD",
-                                "value": "${ES_PASSWORD}"
-                            }
-                        ]
+                        }
                     }
                 },
                 "output": {
