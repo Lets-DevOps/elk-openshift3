@@ -1,5 +1,5 @@
 
-IMAGE_NAME = logstash-builder
+IMAGE_NAME = logstash
 
 build:
 	docker build -t $(IMAGE_NAME) .
