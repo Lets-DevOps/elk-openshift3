@@ -34,6 +34,8 @@ EXPOSE 5601
 # Copy the S2I scripts to /usr/libexec/s2i, since openshift/base-centos7 image sets io.openshift.s2i.scripts-url label that way, or update that label
 COPY ./.s2i/bin/ /usr/libexec/s2i
 
+COPY ./contrib/bin/bootstrap.sh ${KIBANA_HOME}/bin/bootstrap.sh
+
 RUN chown -R 1001:1001 ${KIBANA_HOME}
 
 # This default user is created in the openshift/base-centos7 image
