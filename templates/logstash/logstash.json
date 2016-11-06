@@ -95,6 +95,12 @@
             "required": true
         },
         {
+            "description": "Username to authenticate to Elasticsearch",
+            "name": "ES_USER",
+            "value": "es_admin",
+            "required": true
+        },
+        {
             "description": "Password to authenticate to Elasticsearch",
             "name": "ES_PASSWORD",
             "value": "Copy from ES config",
@@ -178,6 +184,10 @@
                                     {
                                         "name": "ES_PASSWORD",
                                         "value": "${ES_PASSWORD}"
+                                    },
+                                    {
+                                        "name": "ES_USER",
+                                        "value": "${ES_USER}"
                                     }
                                 ],
                                 "resources": {
