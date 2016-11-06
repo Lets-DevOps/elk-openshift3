@@ -14,6 +14,7 @@ git checkout dev
 ## Build the Docker s2i enabled builder image
 
 ````
+cd logstash
 make
 ````
 
