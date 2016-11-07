@@ -23,5 +23,5 @@ fi
 
 if [[ -f ${HOME}/plugins.txt ]]; then
 	echo "---> Installing plugins..."
-	cat ${HOME}/plugins.txt | while read a; do ${KIBANA_HOME}/bin/kibana install $a; done
+	cat ${HOME}/plugins.txt | while read a; do ${KIBANA_HOME}/bin/kibana-plugin install $a; done
 fi
