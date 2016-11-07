@@ -16,10 +16,10 @@ fi
 echo "---> Installing application source...Building latest runtime
 image"
 
-# cp -Rf /tmp/src/. ${HOME}
-# if [[ -d ${HOME}/bin ]]; then
-# 	cp -r ${HOME}/bin/* ${KIBANA_HOME}/bin/
-# fi
+cp -Rf /tmp/src/. ${HOME}
+if [[ -f ${HOME}/kibana.yml ]]; then
+	cp -r ${HOME}/kibana.yml ${KIBANA_HOME}/config/
+fi
 
 if [[ -f ${HOME}/plugins.txt ]]; then
 	echo "---> Installing plugins..."
