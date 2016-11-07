@@ -1,2 +1,2 @@
-shield
-marvel
+x-pack --url https://artifacts.elastic.co/downloads/packs/x-pack/x-pack-5.0.0.zip
+
