@@ -21,7 +21,7 @@ image"
 # 	cp -r ${HOME}/bin/* ${KIBANA_HOME}/bin/
 # fi
 
-# if [[ -f ${HOME}/plugins.txt ]]; then
-# 	echo "---> Installing plugins..."
-# 	cat ${HOME}/plugins.txt | while read a; do ${KIBANA_HOME}/bin/kibana install $a; done
-# fi
+if [[ -f ${HOME}/plugins.txt ]]; then
+	echo "---> Installing plugins..."
+	cat ${HOME}/plugins.txt | while read a; do ${KIBANA_HOME}/bin/kibana install $a; done
+fi
