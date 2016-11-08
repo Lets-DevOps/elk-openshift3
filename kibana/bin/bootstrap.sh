@@ -8,7 +8,7 @@ KIBANA_USER_PARAMS=$@
 KIBANA_CONFIG=${KIBANA_CONFIG}
 
 # Internal params
-KIBANA_CMD="${KIBANA_HOME}/bin/kibana -e ${ELASTICSEARCH_URL} ${KIBANA_USER_PARAMS}"
+KIBANA_CMD="${KIBANA_HOME}/bin/kibana ${KIBANA_USER_PARAMS}"
 
 #######################################
 # Echo/log function
@@ -31,6 +31,16 @@ print_config() {
   printf '=%.0s' {1..100} && echo
 }
 
+# Modify Kibana config
+if [[ -n "$ELASTICSEARCH_URL" ]]; then
+	sed -ri "s|.*(elasticsearch\.url: ).*$|\1\"$ELASTICSEARCH_URL\"|" $KIBANA_CONFIG
+fi
+if [[ -n "$ES_USER" ]]; then
+	sed -ri "s|.*(elasticsearch\.username: ).*$|\1\"$ES_USER\"|" $KIBANA_CONFIG
+fi
+if [[ -n "$ES_PASSWORD" ]]; then
+	sed -ri "s|.*(elasticsearch\.password: ).*$|\1\"$ES_PASSWORD\"|" $KIBANA_CONFIG
+fi
 
 # Launch Kibana
 log $KIBANA_CMD && print_config

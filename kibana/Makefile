@@ -1,5 +1,5 @@
 
-IMAGE_NAME = kibana-builder
+IMAGE_NAME = kibana
 
 build:
 	docker build -t $(IMAGE_NAME) .
