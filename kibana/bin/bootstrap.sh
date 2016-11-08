@@ -1,7 +1,7 @@
 
 #!/bin/sh
 
-set -u
+# set -u
 
 # User params
 KIBANA_USER_PARAMS=$@
