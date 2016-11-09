@@ -1,1 +1,2 @@
 elastic/sense
+kibana/shield/latest
