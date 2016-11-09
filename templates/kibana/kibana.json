@@ -1,0 +1,272 @@
+{
+    "kind": "Template",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "kibana",
+        "annotations": {
+            "description": "A kibana application",
+            "tags": "kibana,logging,elk,analytics"
+        }
+    },
+    "labels": {
+        "created-by": "template-kibana"
+    },
+    "parameters": [
+        {
+            "description": "The name assigned to all of the frontend objects defined in this template",
+            "name": "NAME",
+            "required": true
+        },
+        {
+            "description": "Maximum amount of memory the container can use",
+            "name": "MEMORY_LIMIT",
+            "value": "512Mi",
+            "required": true
+        },
+        {
+            "description": "Namespace where the ImageStream resides",
+            "name": "NAMESPACE",
+            "value": "",
+            "required": true
+        },
+        {
+            "description": "Name of the kibana builder image",
+            "name": "BUILDER_IMAGE_NAME",
+            "value": "kibana",
+            "required": true
+        },
+        {
+            "description": "Tag of the kibana builder image",
+            "name": "BUILDER_IMAGE_TAG",
+            "value": "latest",
+            "required": true
+        },
+        {
+            "description": "The URL of the repository with your application source code",
+            "name": "GIT_URI",
+            "required": true
+        },
+        {
+            "description": "Git branch/tag reference",
+            "name": "GIT_REF",
+            "value": "master",
+            "required": true
+        },
+        {
+            "description": "Git context directory",
+            "name": "CONTEXT_DIR",
+            "value": "",
+            "required": false
+        },
+        {
+            "description": "Git scm secret",
+            "name": "GIT_SOURCE_SECRET",
+            "value": "",
+            "required": false
+        },
+        {
+            "description": "A secret string used to configure the GitHub webhook",
+            "name": "GITHUB_WEBHOOK_SECRET",
+            "generate": "expression",
+            "from": "[a-zA-Z0-9]{40}"
+        },
+        {
+            "description": "A secret string used to configure the Generic webhook",
+            "name": "GENERIC_WEBHOOK_SECRET",
+            "generate": "expression",
+            "from": "[a-zA-Z0-9]{40}"
+        },
+        {
+            "description": "Elasticsearch Service Name on OSV3",
+            "name": "ES_SERVICE_NAME",
+            "value": "elasticsearch",
+            "required": true
+        },
+        {
+            "description": "Username to authenticate to Elasticsearch",
+            "name": "ES_USER",
+            "value": "es_admin",
+            "required": true
+        },
+        {
+            "description": "Password to authenticate to Elasticsearch",
+            "name": "ES_PASSWORD",
+            "value": "Copy from ES config",
+            "required": true
+        }
+
+    ]
+    ,
+    "objects": [
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${NAME}",
+                "labels": {
+                    "application": "${NAME}"
+                }
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Rolling",
+                    "rollingParams": {
+                        "updatePeriodSeconds": 1,
+                        "intervalSeconds": 1,
+                        "timeoutSeconds": 600,
+                        "maxUnavailable": "25%",
+                        "maxSurge": "25%"
+                    },
+                    "resources": {}
+                },
+                "triggers": [
+                    {
+                        "type": "ConfigChange"
+                    },
+                    {
+                        "type": "ImageChange",
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "${NAME}"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "namespace": "${NAMESPACE}",
+                                "name": "${NAME}:latest"
+                            }
+                        }
+                    }
+                ],
+                "replicas": 1,
+                "test": false,
+                "selector": {
+                    "application": "${NAME}",
+                    "deploymentconfig": "${NAME}"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "application": "${NAME}",
+                            "deploymentconfig": "${NAME}"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "name": "${NAME}",
+                                "image": "${NAMESPACE}/${NAME}",
+                                "env": [
+                                    {
+                                        "name": "ELASTICSEARCH_URL",
+                                        "value": "http://${ES_SERVICE_NAME}:9200"
+                                    },
+                                    {
+                                        "name": "ES_PASSWORD",
+                                        "value": "${ES_PASSWORD}"
+                                    },
+                                    {
+                                        "name": "ES_USER",
+                                        "value": "${ES_USER}"
+                                    }
+                                ],
+                                "resources": {
+                                    "limits": {
+                                        "memory": "${MEMORY_LIMIT}"
+                                    }
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "imagePullPolicy": "Always"
+                            }
+                        ],
+                        "restartPolicy": "Always",
+                        "terminationGracePeriodSeconds": 30,
+                        "dnsPolicy": "ClusterFirst",
+                        "securityContext": {}
+                    }
+                }
+            }
+        },
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${NAME}",
+                "labels": {
+                    "application": "${NAME}"
+                }
+            },
+            "spec": {
+                "tags": [
+                    {
+                        "name": "latest"
+                    }
+                ]
+            },
+            "status": {
+                "dockerImageRepository": ""
+            }
+        },
+        {
+            "kind": "BuildConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${NAME}",
+                "labels": {
+                    "application": "${NAME}"
+                }
+            },
+            "spec": {
+                "triggers": [
+                    {
+                        "type": "GitHub",
+                        "github": {
+                            "secret": "${GITHUB_WEBHOOK_SECRET}"
+                        }
+                    },
+                    {
+                        "type": "Generic",
+                        "generic": {
+                            "secret": "${GENERIC_WEBHOOK_SECRET}"
+                        }
+                    },
+                    {
+                        "type": "ConfigChange"
+                    },
+                    {
+                        "type": "ImageChange",
+                        "imageChange": {}
+                    }
+                ],
+                "runPolicy": "Serial",
+                "source": {
+                    "type": "Git",
+                    "git": {
+                        "uri": "${GIT_URI}",
+                        "ref": "${GIT_REF}"
+                    },
+                    "contextDir": "${CONTEXT_DIR}",
+                    "sourceSecret": {
+                        "name": "${GIT_SOURCE_SECRET}"
+                    }
+                },
+                "strategy": {
+                    "type": "Source",
+                    "sourceStrategy": {
+                        "from": {
+                            "kind": "ImageStreamTag",
+                            "namespace": "${NAMESPACE}",
+                            "name": "${BUILDER_IMAGE_NAME}:${BUILDER_IMAGE_TAG}"
+                        }
+                    }
+                },
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "${NAME}:latest"
+                    }
+                }
+            }
+        }
+    ]
+}
