@@ -99,6 +99,32 @@
     ,
     "objects": [
         {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${NAME}",
+                "labels": {
+                    "application": "${NAME}"
+                }
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name": "5601-tcp",
+                        "protocol": "TCP",
+                        "port": 5601,
+                        "targetPort": 5601
+                    }
+                ],
+                "selector": {
+                    "application": "${NAME}",
+                    "deploymentconfig": "${NAME}"
+                },
+                "type": "ClusterIP",
+                "sessionAffinity": "None"
+            }
+        },
+        {
             "kind": "DeploymentConfig",
             "apiVersion": "v1",
             "metadata": {
