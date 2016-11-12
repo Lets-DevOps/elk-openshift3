@@ -34,6 +34,4 @@ RUN chown -R 1001:1001 ${LOGSTASH_HOME}
 # This default user is created in the openshift/base-centos7 image
 USER 1001
 
-WORKDIR ${LOGSTASH_HOME}
-
 CMD ["/usr/libexec/s2i/usage"]
