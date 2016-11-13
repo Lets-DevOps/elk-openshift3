@@ -10,8 +10,9 @@
            {
               "message_field": {
                  "mapping": {
+                    "index": "analyzed",
                     "omit_norms": true,
-                    "type": "text"
+                    "type": "string"
                  },
                  "match_mapping_type": "string",
                  "match": "message"
@@ -20,10 +21,12 @@
            {
               "string_fields": {
                  "mapping": {
+                    "index": "analyzed",
                     "omit_norms": true,
-                    "type": "text",
+                    "type": "string",
                     "fields": {
                        "raw": {
+                          "index": "not_analyzed",
                           "ignore_above": 256,
                           "type": "string"
                        }
@@ -45,6 +48,7 @@
               "type": "object"
            },
            "@version": {
+              "index": "not_analyzed",
               "type": "string"
            }
         },
