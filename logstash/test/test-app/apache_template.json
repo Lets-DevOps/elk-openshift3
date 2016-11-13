@@ -25,7 +25,7 @@
                     "fields": {
                        "raw": {
                           "ignore_above": 256,
-                          "type": "keyword"
+                          "type": "string"
                        }
                     }
                  },
@@ -45,7 +45,7 @@
               "type": "object"
            },
            "@version": {
-              "type": "keyword"
+              "type": "string"
            }
         },
         "_all": {
