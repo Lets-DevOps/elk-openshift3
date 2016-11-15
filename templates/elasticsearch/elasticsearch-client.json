@@ -1,0 +1,332 @@
+{
+    "kind": "Template",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "elasticsearch-client",
+        "annotations": {
+            "description": "An elasticsearch client",
+            "tags": "elasticsearch,database,cache,search,elk,cluster"
+        }
+    },
+    "labels": {
+        "created-by": "template-elasticsearch-client"
+    },
+    "parameters": [
+        {
+            "description": "The name assigned to all of the frontend objects defined in this template",
+            "name": "NAME",
+            "value": "elasticsearch-client",
+            "required": true
+        },
+        {
+            "description": "Maximum amount of memory the container can use",
+            "name": "MEMORY_LIMIT",
+            "value": "512Mi",
+            "required": true
+        },
+        {
+            "description": "Namespace where the ImageStream resides",
+            "name": "NAMESPACE",
+            "value": "",
+            "required": true
+        },
+        {
+            "description": "Name of the elasticsearch builder image",
+            "name": "BUILDER_IMAGE_NAME",
+            "value": "elasticsearch",
+            "required": true
+        },
+        {
+            "description": "Tag of the elasticsearch builder image",
+            "name": "BUILDER_IMAGE_TAG",
+            "value": "latest",
+            "required": true
+        },
+        {
+            "description": "The URL of the repository with your application source code",
+            "name": "GIT_URI",
+            "required": true
+        },
+        {
+            "description": "Git branch/tag reference",
+            "name": "GIT_REF",
+            "value": "master",
+            "required": true
+        },
+        {
+            "description": "Git context directory",
+            "name": "CONTEXT_DIR",
+            "value": "",
+            "required": false
+        },
+        {
+            "description": "Git scm secret",
+            "name": "GIT_SOURCE_SECRET",
+            "value": "",
+            "required": false
+        },
+        {
+            "description": "A secret string used to configure the GitHub webhook",
+            "name": "GITHUB_WEBHOOK_SECRET",
+            "generate": "expression",
+            "from": "[a-zA-Z0-9]{40}"
+        },
+        {
+            "description": "A secret string used to configure the Generic webhook",
+            "name": "GENERIC_WEBHOOK_SECRET",
+            "generate": "expression",
+            "from": "[a-zA-Z0-9]{40}"
+        },
+        {
+            "description": "Admin username if shield(authentication plugin) is installed",
+            "name": "ADMIN_USERNAME",
+            "value": "es_admin",
+            "required": false
+        },
+        {
+            "description": "Admin password if shield(authentication plugin) is installed",
+            "name": "ADMIN_PASSWORD",
+            "generate": "expression",
+            "from": "[a-zA-Z0-9]{8}"
+        },
+        {
+            "description": "Service Account to access kubernetes API",
+            "name": "SERVICE_ACCOUNT",
+            "value": "elasticsearch",
+            "required": true
+        }
+    ]
+    ,
+    "objects": [
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "elasticsearch-client",
+                "labels": {
+                    "application": "elasticsearch-client"
+                }
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name": "9200-tcp",
+                        "protocol": "TCP",
+                        "port": 9200,
+                        "targetPort": 9200
+                    }
+                ],
+                "selector": {
+                    "component": "elasticsearch",
+                    "type": "client"
+                },
+                "type": "ClusterIP",
+                "sessionAffinity": "None"
+            }
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "elasticsearch-client",
+                "labels": {
+                    "component": "elasticsearch",
+                    "type": "client"
+                }
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Rolling",
+                    "rollingParams": {
+                        "updatePeriodSeconds": 1,
+                        "intervalSeconds": 1,
+                        "timeoutSeconds": 600,
+                        "maxUnavailable": "25%",
+                        "maxSurge": "25%"
+                    },
+                    "resources": {}
+                },
+                "triggers": [
+                    {
+                        "type": "ConfigChange"
+                    },
+                    {
+                        "type": "ImageChange",
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "elasticsearch-client"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "namespace": "${NAMESPACE}",
+                                "name": "${NAME}:latest"
+                            }
+                        }
+                    }
+                ],
+                "replicas": 1,
+                "test": false,
+                "selector": {
+                    "component": "elasticsearch",
+                    "type": "client"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "component": "elasticsearch",
+                            "type": "client"
+                        }
+                    },
+                    "spec": {
+                        "serviceAccount": "${SERVICE_ACCOUNT}",
+                        "serviceAccountName": "${SERVICE_ACCOUNT}",
+                        "containers": [
+                            {
+                                "name": "elasticsearch-client",
+                                "image": "${NAMESPACE}/${NAME}",
+                                "env": [
+                                    {
+                                        "name": "NAMESPACE",
+                                        "value": "${NAMESPACE}"
+                                    },
+                                    {
+                                        "name": "SERVICE",
+                                        "value": "elasticsearch-master"
+                                    },
+                                    {
+                                        "name": "NODE_DATA",
+                                        "value": "false"
+                                    },
+                                    {
+                                        "name": "NODE_MASTER",
+                                        "value": "false"
+                                    }
+                                ],
+                                "ports": [
+                                    {
+                                        "containerPort": 9200,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "terminationMessagePath": "/dev/termination-log",
+                                "imagePullPolicy": "Always"
+                            }
+                        ],
+                        "restartPolicy": "Always",
+                        "terminationGracePeriodSeconds": 30,
+                        "dnsPolicy": "ClusterFirst",
+                        "securityContext": {}
+                    }
+                }
+            }
+        },
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${NAME}",
+                "labels": {
+                    "application": "elasticsearch-client"
+                }
+            },
+            "spec": {
+                "tags": [
+                    {
+                        "name": "latest"
+                    }
+                ]
+            },
+            "status": {
+                "dockerImageRepository": ""
+            }
+        },
+        {
+            "kind": "BuildConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${NAME}",
+                "labels": {
+                    "application": "${NAME}"
+                }
+            },
+            "spec": {
+                "triggers": [
+                    {
+                        "type": "GitHub",
+                        "github": {
+                            "secret": "${GITHUB_WEBHOOK_SECRET}"
+                        }
+                    },
+                    {
+                        "type": "Generic",
+                        "generic": {
+                            "secret": "${GENERIC_WEBHOOK_SECRET}"
+                        }
+                    },
+                    {
+                        "type": "ConfigChange"
+                    },
+                    {
+                        "type": "ImageChange",
+                        "imageChange": {}
+                    }
+                ],
+                "runPolicy": "Serial",
+                "source": {
+                    "type": "Git",
+                    "git": {
+                        "uri": "${GIT_URI}",
+                        "ref": "${GIT_REF}"
+                    },
+                    "contextDir": "${CONTEXT_DIR}",
+                    "sourceSecret": {
+                        "name": "${GIT_SOURCE_SECRET}"
+                    }
+                },
+                "strategy": {
+                    "type": "Source",
+                    "sourceStrategy": {
+                        "from": {
+                            "kind": "ImageStreamTag",
+                            "namespace": "${NAMESPACE}",
+                            "name": "${BUILDER_IMAGE_NAME}:${BUILDER_IMAGE_TAG}"
+                        },
+                        "env": [
+                            {
+                                "name": "ADMIN_USERNAME",
+                                "value": "${ADMIN_USERNAME}"
+                            },
+                            {
+                                "name": "ADMIN_PASSWORD",
+                                "value": "${ADMIN_PASSWORD}"
+                            },
+                            {
+                                "name": "NAMESPACE",
+                                "value": "${NAMESPACE}"
+                            },
+                            {
+                                "name": "NODE_DATA",
+                                "value": "false"
+                            },
+                            {
+                                "name": "NODE_MASTER",
+                                "value": "false"
+                            },
+                            {
+                                "name": "SERVICE",
+                                "value": "elasticsearch-master"
+                            }
+                        ]
+                    }
+                },
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "${NAME}:latest"
+                    }
+                }
+            }
+        }
+    ]
+}
