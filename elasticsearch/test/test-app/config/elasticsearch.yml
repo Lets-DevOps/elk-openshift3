@@ -51,7 +51,7 @@ cluster.name: ${ELASTICSEARCH_CLUSTER_NAME}
 #
 # Set the bind address to a specific IP (IPv4 or IPv6):
 #
-network.host: 0.0.0.0
+# network.host: 0.0.0.0
 #
 # Set a custom port for HTTP:
 #
