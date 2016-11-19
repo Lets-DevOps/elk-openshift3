@@ -51,11 +51,11 @@ cluster.name: ${ELASTICSEARCH_CLUSTER_NAME}
 #
 # Set the bind address to a specific IP (IPv4 or IPv6):
 #
-network.host: 0.0.0.0
+# network.host: 0.0.0.0
 #
 # Set a custom port for HTTP:
 #
-http.port: 9200
+# http.port: 9200
 #
 # For more information, see the documentation at:
 # <http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-network.html>
@@ -92,3 +92,16 @@ http.port: 9200
 # Require explicit names when deleting indices:
 #
 # action.destructive_requires_name: true
+
+node.data: ${NODE_DATA}
+node.master: ${NODE_MASTER}
+
+network.host: 0.0.0.0
+
+cloud:
+  kubernetes:
+    service: ${SERVICE}
+    namespace: ${NAMESPACE}
+
+discovery:
+  type: kubernetes
