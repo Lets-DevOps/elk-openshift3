@@ -1,4 +1,2 @@
-license
-shield
+x-pack
 lmenezes/elasticsearch-kopf
-io.fabric8/elasticsearch-cloud-kubernetes/2.4.1 -b

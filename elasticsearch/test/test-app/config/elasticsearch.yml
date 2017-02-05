@@ -14,7 +14,8 @@
 #
 # Use a descriptive name for your cluster:
 #
-cluster.name: ${ELASTICSEARCH_CLUSTER_NAME}
+# cluster.name: ${ELASTICSEARCH_CLUSTER_NAME}
+cluster.name: elasticsearch
 #
 # ------------------------------------ Node ------------------------------------
 #
@@ -93,15 +94,15 @@ cluster.name: ${ELASTICSEARCH_CLUSTER_NAME}
 #
 # action.destructive_requires_name: true
 
-node.data: ${NODE_DATA}
-node.master: ${NODE_MASTER}
+# node.data: ${NODE_DATA}
+# node.master: ${NODE_MASTER}
 
-network.host: 0.0.0.0
+# network.host: 0.0.0.0
 
-cloud:
-  kubernetes:
-    service: ${SERVICE}
-    namespace: ${NAMESPACE}
+# cloud:
+#   kubernetes:
+#     service: ${SERVICE}
+#     namespace: ${NAMESPACE}
 
-discovery:
-  type: kubernetes
+# discovery:
+#   type: kubernetes

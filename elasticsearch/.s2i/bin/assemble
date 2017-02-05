@@ -21,7 +21,7 @@ fi
 
 if [[ -f ./plugins.txt ]]; then
 	echo "---> Installing plugins..."
-	cat plugins.txt | while read a; do ${ES_HOME}/bin/plugin install $a; done
+	cat plugins.txt | while read a; do ${ES_HOME}/bin/elasticsearch-plugin install $a; done
 fi
 
 if [[ -d ${ES_HOME}/bin/shield ]]; then

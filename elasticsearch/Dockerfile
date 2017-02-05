@@ -7,7 +7,7 @@ MAINTAINER Harish Shetty <harish@theremotelab.com>
 ENV BUILDER_VERSION=1.0 \
 	HOME=/opt/app-root/src \
 	JAVA_VERSION=1.8.0 \
-	ES_VERSION=2.4.1 \
+	ES_VERSION=5.2.0 \
 	ES_HOME=/usr/share/elasticsearch \
 	ELASTICSEARCH_CLUSTER_NAME=elasticsearch-cluster \
 	ELASTICSEARCH_MAX_MEMORY=1G \
@@ -19,7 +19,7 @@ LABEL io.k8s.description="Builder platform for Elasticsearch" \
      io.openshift.tags="elasticsearch,${ES_VERSION},elk,database,cache,search"
 
 RUN yum install -y --setopt=tsflags=nodocs java-${JAVA_VERSION}-openjdk && \
-	wget -q https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz && \
+	wget -q https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz && \
 	mkdir -p ${ES_HOME} && tar -zxvf elasticsearch-${ES_VERSION}.tar.gz -C ${ES_HOME} --strip-components=1 && \
 	rm -f elasticsearch-${ES_VERSION}.tar.gz && \
 	yum clean all -y && \
